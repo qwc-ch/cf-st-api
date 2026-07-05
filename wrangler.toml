@@ -1,4 +1,5 @@
-name = "sillytavern-api"
+# wrangler.toml
+name = 'cf-st-api'
 main = ".svelte-kit/cloudflare/_worker.js"
 compatibility_date = "2025-04-01"
 compatibility_flags = ["nodejs_compat"]
