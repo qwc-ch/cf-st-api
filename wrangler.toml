@@ -1,0 +1,26 @@
+name = "sillytavern-api"
+main = ".svelte-kit/cloudflare/_worker.js"
+compatibility_date = "2025-04-01"
+compatibility_flags = ["nodejs_compat"]
+
+# routes:
+# - /api/*  -> this Worker (SvelteKit backend)
+# Frontend static files should be deployed to Cloudflare Pages
+# with a redirect rule: /api/* https://sillytavern-api.workers.dev/* 200
+
+[[d1_databases]]
+binding = "DB"
+database_name = "sillytavern-db"
+database_id = "137ff2fe-9341-4f13-9b4c-61a8471b9f7b"  # Set after: wrangler d1 create sillytavern-db
+migrations_dir = "migrations"
+
+[[r2_buckets]]
+binding = "ASSETS_BUCKET"
+bucket_name = "sillytavern-assets"
+
+[assets]
+directory = ".svelte-kit/output/client"
+binding = "ASSETS"
+
+[vars]
+PUBLIC_R2_URL = ""  # Optional: set to R2 public URL for direct image access

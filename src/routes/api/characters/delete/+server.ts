@@ -1,0 +1,21 @@
+import { jsonError, jsonOk } from '../../../../lib/auth';
+import { deleteCharacter, getCharacterById, getDb } from '../../../../lib/db';
+import { getBucket } from '../../../../lib/r2';
+
+export const POST = async (event) => {
+    if (!event.locals.user) return jsonError(401, 'Unauthorized');
+    const { id } = await event.request.json().catch(() => ({}));
+    if (!id) return jsonError(400, 'id is required');
+
+    const db = getDb(event.platform!);
+    const char = await getCharacterById(db, id, event.locals.user.handle);
+    if (!char) return jsonError(404, 'Character not found');
+
+    if (char.avatar_url) {
+        const bucket = getBucket(event.platform!);
+        await bucket.delete(char.avatar_url).catch(() => {});
+    }
+
+    await deleteCharacter(db, id, event.locals.user.handle);
+    return jsonOk({ ok: true });
+};
