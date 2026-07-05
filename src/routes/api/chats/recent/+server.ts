@@ -1,7 +1,7 @@
 import { jsonError, jsonOk } from '../../../../lib/auth';
 import { getDb } from '../../../../lib/db';
 
-export const GET = async (event) => {
+const handle = async (event) => {
     if (!event.locals.user) return jsonError(401, 'Unauthorized');
 
     const db = getDb(event.platform!);
@@ -20,3 +20,6 @@ export const GET = async (event) => {
 
     return jsonOk(chats);
 };
+
+export const GET = handle;
+export const POST = handle;
