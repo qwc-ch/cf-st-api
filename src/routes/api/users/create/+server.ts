@@ -1,5 +1,5 @@
 import { generateSalt, hashPassword, jsonError, jsonOk } from '../../../../lib/auth';
-import { createUser, getDb, getUserByHandle } from '../../../../lib/db';
+import { createUser, getDb, getUserByHandle, listUsers } from '../../../../lib/db';
 
 export const POST = async (event) => {
     try {
@@ -18,12 +18,16 @@ export const POST = async (event) => {
             password_hash = hashPassword(password, salt);
         }
 
+        // First user is automatically admin
+        const allUsers = await listUsers(db);
+        const isFirstUser = allUsers.length === 0;
+
         const user = await createUser(db, {
             handle: handle.toLowerCase().trim(),
             name: name || handle,
             password_hash,
             salt,
-            admin: 0,
+            admin: isFirstUser ? 1 : 0,
         });
 
         return jsonOk({ handle: user.handle, name: user.name, admin: !!user.admin });
