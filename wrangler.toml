@@ -12,7 +12,7 @@ compatibility_flags = ["nodejs_compat"]
 [[d1_databases]]
 binding = "DB"
 database_name = "sillytavern-db"
-database_id = "137ff2fe-9341-4f13-9b4c-61a8471b9f7b"  # Set after: wrangler d1 create sillytavern-db
+database_id = "1208a6f1-e65a-4e5d-84b7-50fcdd1497fe"
 migrations_dir = "migrations"
 
 [[r2_buckets]]
