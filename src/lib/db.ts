@@ -1,7 +1,9 @@
 import type { D1Database } from '@cloudflare/workers-types';
 
 export function getDb(platform: App.Platform): D1Database {
-    return platform.env.DB;
+    const db = platform?.env?.DB;
+    if (!db) throw new Error('D1 database binding not available');
+    return db;
 }
 
 // ── Users ──
