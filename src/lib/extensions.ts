@@ -7,29 +7,19 @@ import { requireAuth, jsonError, jsonOk } from './auth';
 
 const exec = promisify(execFile);
 
-const DEFAULT_DIR = './data/extensions';
-const THIRD_PARTY = 'third-party';
+const DEFAULT_DIR = './static/scripts/extensions';
 
 function getBaseDir(): string {
     return process.env.EXTENSIONS_DIR || DEFAULT_DIR;
-}
-
-function getGlobalDir(): string {
-    return path.join(getBaseDir(), 'global', THIRD_PARTY);
-}
-
-function getLocalDir(handle: string): string {
-    return path.join(getBaseDir(), 'users', handle, THIRD_PARTY);
 }
 
 async function ensureDir(dir: string): Promise<void> {
     await fs.mkdir(dir, { recursive: true });
 }
 
-export function getExtensionPath(handle: string, name: string, global: boolean): string {
-    return global
-        ? path.join(getGlobalDir(), name)
-        : path.join(getLocalDir(handle), name);
+export function getExtensionPath(_handle: string, name: string, _global: boolean): string {
+    // All extensions go under third-party/ so they're served at /scripts/extensions/third-party/{name}/
+    return path.join(getBaseDir(), 'third-party', name);
 }
 
 export interface ExtensionInfo {
@@ -37,33 +27,17 @@ export interface ExtensionInfo {
     type: 'global' | 'local';
 }
 
-export async function discoverExtensions(handle: string): Promise<ExtensionInfo[]> {
+export async function discoverExtensions(_handle: string): Promise<ExtensionInfo[]> {
     const results: ExtensionInfo[] = [];
-
-    // Global extensions
-    const globalDir = getGlobalDir();
+    const dir = path.join(getBaseDir(), 'third-party');
     try {
-        const entries = await fs.readdir(globalDir, { withFileTypes: true });
+        const entries = await fs.readdir(dir, { withFileTypes: true });
         for (const entry of entries) {
             if (entry.isDirectory() && !entry.name.startsWith('.')) {
-                results.push({ name: `third-party/${entry.name}`, type: 'global' });
+                results.push({ name: `third-party/${entry.name}`, type: 'local' });
             }
         }
     } catch { /* directory doesn't exist yet */ }
-
-    // Local extensions (user-specific)
-    const localDir = getLocalDir(handle);
-    try {
-        const entries = await fs.readdir(localDir, { withFileTypes: true });
-        for (const entry of entries) {
-            if (entry.isDirectory() && !entry.name.startsWith('.')) {
-                if (!results.some(r => r.name === `third-party/${entry.name}` && r.type === 'global')) {
-                    results.push({ name: `third-party/${entry.name}`, type: 'local' });
-                }
-            }
-        }
-    } catch { /* directory doesn't exist yet */ }
-
     return results;
 }
 
