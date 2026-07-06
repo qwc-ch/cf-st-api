@@ -1,5 +1,5 @@
 import { jsonError, jsonOk } from '../../../../lib/auth';
-import { getWorldInfoById, saveWorldInfo } from '../../../../lib/db';
+import { getWorldInfoById, saveWorldInfo, sql } from '../../../../lib/db';
 
 export const POST = async (event) => {
     if (!event.locals.user) return jsonError(401, 'Unauthorized');
@@ -10,12 +10,10 @@ export const POST = async (event) => {
         const existing = await getWorldInfoById(id, event.locals.user.handle);
         if (!existing) return jsonError(404, 'World info not found');
         const now = Date.now();
-        await db
-            .prepare(
-                'UPDATE world_infos SET entries = ?, name = COALESCE(?, name), updated = ? WHERE id = ? AND user_handle = ?',
-            )
-            .bind(JSON.stringify(entries || []), name || null, now, id, event.locals.user.handle)
-            .run();
+        await sql(
+            'UPDATE world_infos SET entries = $1, name = COALESCE($2, name), updated = $3 WHERE id = $4 AND user_handle = $5',
+            [JSON.stringify(entries || []), name || null, now, id, event.locals.user.handle],
+        );
         return jsonOk({ ok: true });
     }
 

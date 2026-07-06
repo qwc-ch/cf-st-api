@@ -1,5 +1,5 @@
-import indexHtml from '../../../static/index.html?raw';
 import type { RequestEvent } from '@sveltejs/kit';
+import indexHtml from '../../../static/index.html?raw';
 
 export const GET = (event: RequestEvent) => {
     if (!event.locals.user) {

@@ -1,30 +1,30 @@
 <script>
-    let username = '';
-    let password = '';
-    let error = '';
+let username = '';
+let password = '';
+let error = '';
 
-    async function handleLogin() {
-        error = '';
-        try {
-            const res = await fetch('/api/admin-login', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username, password }),
-            });
-            if (res.ok) {
-                window.location.href = '/';
-            } else {
-                const data = await res.json();
-                error = data.error || 'Login failed';
-            }
-        } catch {
-            error = 'Network error';
+async function handleLogin() {
+    error = '';
+    try {
+        const res = await fetch('/api/admin-login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username, password }),
+        });
+        if (res.ok) {
+            window.location.href = '/';
+        } else {
+            const data = await res.json();
+            error = data.error || 'Login failed';
         }
+    } catch {
+        error = 'Network error';
     }
+}
 
-    function handleKeydown(e) {
-        if (e.key === 'Enter') handleLogin();
-    }
+function handleKeydown(e) {
+    if (e.key === 'Enter') handleLogin();
+}
 </script>
 
 <div class="login-container">

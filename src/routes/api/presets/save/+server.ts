@@ -1,4 +1,5 @@
 import { jsonError, jsonOk } from '../../../../lib/auth';
+import { sql } from '../../../../lib/db';
 export const POST = async (event) => {
     if (!event.locals.user) return jsonError(401, 'Unauthorized');
     const body = await event.request.json().catch(() => ({}));
@@ -9,14 +10,12 @@ export const POST = async (event) => {
     const now = Date.now();
     const value = typeof preset === 'string' ? preset : JSON.stringify(preset);
 
-    await db
-        .prepare(
-            `INSERT INTO presets (user_handle, name, api_id, value, created, updated)
-         VALUES (?, ?, ?, ?, ?, ?)
+    await sql(
+        `INSERT INTO presets (user_handle, name, api_id, value, created, updated)
+         VALUES ($1, $2, $3, $4, $5, $6)
          ON CONFLICT(user_handle, name) DO UPDATE SET api_id = excluded.api_id, value = excluded.value, updated = excluded.updated`,
-        )
-        .bind(event.locals.user.handle, name, apiId ?? '', value, now, now)
-        .run();
+        [event.locals.user.handle, name, apiId ?? '', value, now, now],
+    );
 
     return jsonOk({ name });
 };

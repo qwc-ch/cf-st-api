@@ -142,7 +142,14 @@ async function initS3() {
             forcePathStyle: process.env.S3_FORCE_PATH_STYLE === 'true',
         });
         s3Available = true;
-        return { S3Client, PutObjectCommand, GetObjectCommand, DeleteObjectCommand, ListObjectsV2Command, client: s3Client };
+        return {
+            S3Client,
+            PutObjectCommand,
+            GetObjectCommand,
+            DeleteObjectCommand,
+            ListObjectsV2Command,
+            client: s3Client,
+        };
     } catch {
         throw new Error('S3 storage requires @aws-sdk/client-s3 to be installed. Run: pnpm add @aws-sdk/client-s3');
     }
@@ -157,12 +164,14 @@ const S3_BUCKET = process.env.S3_BUCKET || '';
 async function s3Upload(key: string, data: ArrayBuffer | Uint8Array | string, contentType?: string): Promise<string> {
     const { PutObjectCommand, client } = await getS3();
     const body = typeof data === 'string' ? data : new Uint8Array(data);
-    await client.send(new PutObjectCommand({
-        Bucket: S3_BUCKET,
-        Key: key,
-        Body: body,
-        ContentType: contentType,
-    }));
+    await client.send(
+        new PutObjectCommand({
+            Bucket: S3_BUCKET,
+            Key: key,
+            Body: body,
+            ContentType: contentType,
+        }),
+    );
     return key;
 }
 
@@ -200,11 +209,13 @@ async function s3ListPrefix(
     delimiter?: string,
 ): Promise<{ objects: { key: string }[]; delimitedPrefixes: string[] }> {
     const { ListObjectsV2Command, client } = await getS3();
-    const result = await client.send(new ListObjectsV2Command({
-        Bucket: S3_BUCKET,
-        Prefix: prefix,
-        Delimiter: delimiter,
-    }));
+    const result = await client.send(
+        new ListObjectsV2Command({
+            Bucket: S3_BUCKET,
+            Prefix: prefix,
+            Delimiter: delimiter,
+        }),
+    );
     return {
         objects: (result.Contents || []).map((o: any) => ({ key: o.Key })),
         delimitedPrefixes: (result.CommonPrefixes || []).map((p: any) => p.Prefix),

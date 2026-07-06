@@ -1,4 +1,5 @@
 import { jsonOk } from '../../../../lib/auth';
+import { sql } from '../../../../lib/db';
 
 const handle = async (event) => {
     if (!event.locals.user)
@@ -6,11 +7,9 @@ const handle = async (event) => {
             status: 200,
             headers: { 'Content-Type': 'application/json' },
         });
-    const rows = await db
-        .prepare('SELECT * FROM backgrounds WHERE user_handle = ? ORDER BY created DESC')
-        .bind(event.locals.user.handle)
-        .all()
-        .then((r) => r.results);
+    const rows = (await sql('SELECT * FROM backgrounds WHERE user_handle = $1 ORDER BY created DESC', [
+        event.locals.user.handle,
+    ])) as { name: string; path: string }[];
     const images = rows.map((r) => ({ filename: r.name, path: r.path }));
     return jsonOk({ images, config: {} });
 };
