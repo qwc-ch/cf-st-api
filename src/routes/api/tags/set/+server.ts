@@ -1,5 +1,5 @@
 import { jsonError, jsonOk } from '../../../../lib/auth';
-import { getDb } from '../../../../lib/db';
+import { sql } from '../../../../lib/db';
 
 export const POST = async (event) => {
     if (!event.locals.user) return jsonError(401, 'Unauthorized');
@@ -7,24 +7,28 @@ export const POST = async (event) => {
     const { name, color } = body;
     if (!name) return jsonError(400, 'name is required');
 
-    const db = getDb(event.platform!);
     const now = Date.now();
 
-    const existing = await db
-        .prepare('SELECT id FROM tags WHERE user_handle = ? AND name = ?')
-        .bind(event.locals.user.handle, name)
-        .first();
+    const existingRows = (await sql('SELECT id FROM tags WHERE user_handle = $1 AND name = $2', [
+        event.locals.user.handle,
+        name,
+    ])) as { id: number }[];
+    const existing = existingRows[0];
 
     if (existing) {
-        await db
-            .prepare('UPDATE tags SET color = ?, created = ? WHERE user_handle = ? AND name = ?')
-            .bind(color || '#808080', now, event.locals.user.handle, name)
-            .run();
+        await sql('UPDATE tags SET color = $1, created = $2 WHERE user_handle = $3 AND name = $4', [
+            color || '#808080',
+            now,
+            event.locals.user.handle,
+            name,
+        ]);
     } else {
-        await db
-            .prepare('INSERT INTO tags (user_handle, name, color, created) VALUES (?, ?, ?, ?)')
-            .bind(event.locals.user.handle, name, color || '#808080', now)
-            .run();
+        await sql('INSERT INTO tags (user_handle, name, color, created) VALUES ($1, $2, $3, $4)', [
+            event.locals.user.handle,
+            name,
+            color || '#808080',
+            now,
+        ]);
     }
 
     return jsonOk({ ok: true });

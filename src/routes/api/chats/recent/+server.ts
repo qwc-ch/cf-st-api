@@ -1,10 +1,8 @@
 import { jsonError, jsonOk } from '../../../../lib/auth';
-import { getDb } from '../../../../lib/db';
 
 const handle = async (event) => {
     if (!event.locals.user) return jsonError(401, 'Unauthorized');
 
-    const db = getDb(event.platform!);
     const chats = await db
         .prepare(`
         SELECT c.id, c.name, c.character_id, c.updated,

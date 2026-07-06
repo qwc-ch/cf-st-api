@@ -1,20 +1,18 @@
 import { jsonError, jsonOk } from '../../../../lib/auth';
-import { createChat, deleteMessages, getChatById, getDb, saveMessage } from '../../../../lib/db';
+import { createChat, deleteMessages, getChatById, saveMessage } from '../../../../lib/db';
 
 export const POST = async (event) => {
     if (!event.locals.user) return jsonError(401, 'Unauthorized');
     const body = await event.request.json().catch(() => ({}));
     const { id, character_id, name, messages } = body;
 
-    const db = getDb(event.platform!);
-
     let chatId = id;
     if (chatId) {
-        const existing = await getChatById(db, chatId, event.locals.user.handle);
+        const existing = await getChatById(chatId, event.locals.user.handle);
         if (!existing) return jsonError(404, 'Chat not found');
-        await deleteMessages(db, chatId);
+        await deleteMessages(chatId);
     } else if (character_id) {
-        const chat = await createChat(db, {
+        const chat = await createChat({
             user_handle: event.locals.user.handle,
             character_id,
             name: name || 'New Chat',
@@ -27,7 +25,7 @@ export const POST = async (event) => {
     if (Array.isArray(messages)) {
         for (let i = 0; i < messages.length; i++) {
             const msg = messages[i];
-            await saveMessage(db, {
+            await saveMessage({
                 chat_id: chatId,
                 role: msg.role || 'user',
                 name: msg.name || '',

@@ -1,6 +1,6 @@
 import { jsonError, jsonOk } from '../../../../lib/auth';
-import { getDb } from '../../../../lib/db';
-import { getBucket, isImageType, uploadImage } from '../../../../lib/r2';
+import { sql } from '../../../../lib/db';
+import { isImageType, uploadImage } from '../../../../lib/r2';
 
 export const POST = async (event) => {
     if (!event.locals.user) return jsonError(401, 'Unauthorized');
@@ -18,9 +18,7 @@ export const POST = async (event) => {
 
     if (!isImageType(contentType)) return jsonError(400, 'Unsupported image type');
 
-    const bucket = getBucket(event.platform!);
     const key = await uploadImage(
-        bucket,
         event.locals.user.handle,
         'backgrounds',
         `${Date.now()}-${name}`,
@@ -28,17 +26,14 @@ export const POST = async (event) => {
         contentType,
     );
 
-    const db = getDb(event.platform!);
     const now = Date.now();
-    await db
-        .prepare(
-            'INSERT INTO backgrounds (user_handle, name, path, data, created) VALUES (?, ?, ?, ?, ?) ON CONFLICT(user_handle, name) DO UPDATE SET path = excluded.path, data = excluded.data',
-        )
-        .bind(event.locals.user.handle, name, key, '{}', now)
-        .run();
+    await sql(
+        'INSERT INTO backgrounds (user_handle, name, path, data, created) VALUES ($1, $2, $3, $4, $5) ON CONFLICT (user_handle, name) DO UPDATE SET path = EXCLUDED.path, data = EXCLUDED.data',
+        [event.locals.user.handle, name, key, '{}', now],
+    );
 
-    const publicUrl = event.platform!.env.PUBLIC_R2_URL
-        ? `${event.platform!.env.PUBLIC_R2_URL}/${key}`
+    const publicUrl = process.env.PUBLIC_STORAGE_URL
+        ? `${process.env.PUBLIC_STORAGE_URL}/${key}`
         : `/api/files/raw/${key}`;
 
     return jsonOk({ path: publicUrl, name });

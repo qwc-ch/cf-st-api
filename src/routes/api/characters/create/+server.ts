@@ -1,13 +1,12 @@
 import { jsonError, jsonOk } from '../../../../lib/auth';
-import { createCharacter, getDb } from '../../../../lib/db';
+import { createCharacter } from '../../../../lib/db';
 
 export const POST = async (event) => {
     if (!event.locals.user) return jsonError(401, 'Unauthorized');
     const body = await event.request.json().catch(() => ({}));
     if (!body.name) return jsonError(400, 'name is required');
 
-    const db = getDb(event.platform!);
-    const char = await createCharacter(db, {
+    const char = await createCharacter({
         user_handle: event.locals.user.handle,
         avatar_url: body.avatar_url || null,
         name: body.name,

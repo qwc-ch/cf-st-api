@@ -1,16 +1,6 @@
 import { jsonError, jsonOk } from '../../../../../../lib/auth';
 
-const PROVIDERS = [
-    'aimlapi',
-    'pollinations',
-    'nanogpt',
-    'chutes',
-    'electronhub',
-    'mistral',
-    'xai',
-    'moonshot',
-    'workers_ai',
-];
+const PROVIDERS = ['aimlapi', 'pollinations', 'nanogpt', 'chutes', 'electronhub', 'mistral', 'xai', 'moonshot'];
 
 export const POST = async (event) => {
     if (!event.locals.user) return jsonError(401, 'Unauthorized');
@@ -40,11 +30,6 @@ export const POST = async (event) => {
 
     try {
         if (provider === 'workers_ai') {
-            const ai = event.platform?.env?.AI;
-            if (ai) {
-                const models = await ai.models.list();
-                return jsonOk({ data: models });
-            }
             return jsonOk({ data: [] });
         }
 

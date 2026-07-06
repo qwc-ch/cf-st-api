@@ -53,10 +53,7 @@ export async function getAuthUser(event: RequestEvent): Promise<{ handle: string
     const parsed = parseSessionToken(token);
     if (!parsed) return null;
 
-    const db = event.platform?.env?.DB;
-    if (!db) return null;
-
-    const user = await getUserByHandle(db, parsed.handle);
+    const user = await getUserByHandle(parsed.handle);
     if (!user || !user.enabled) return null;
 
     return { handle: user.handle, admin: !!user.admin };
@@ -77,7 +74,7 @@ export function jsonError(status: number, message: string): Response {
     });
 }
 
-export function jsonOk(data: any): Response {
+export function jsonOk(data: unknown): Response {
     return new Response(JSON.stringify(data), {
         status: 200,
         headers: { 'Content-Type': 'application/json' },

@@ -1,5 +1,4 @@
 import { jsonOk } from '../../../../lib/auth';
-import { getDb } from '../../../../lib/db';
 
 const handle = async (event) => {
     if (!event.locals.user)
@@ -7,7 +6,6 @@ const handle = async (event) => {
             status: 200,
             headers: { 'Content-Type': 'application/json' },
         });
-    const db = getDb(event.platform!);
     const rows = await db
         .prepare('SELECT * FROM backgrounds WHERE user_handle = ? ORDER BY created DESC')
         .bind(event.locals.user.handle)

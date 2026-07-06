@@ -1,16 +1,15 @@
 import { jsonError } from '../../../../lib/auth';
-import { getChatById, getDb, getMessages } from '../../../../lib/db';
+import { getChatById, getMessages } from '../../../../lib/db';
 
 export const POST = async (event) => {
     if (!event.locals.user) return jsonError(401, 'Unauthorized');
     const { id } = await event.request.json().catch(() => ({}));
     if (!id) return jsonError(400, 'id is required');
 
-    const db = getDb(event.platform!);
-    const chat = await getChatById(db, id, event.locals.user.handle);
+    const chat = await getChatById(id, event.locals.user.handle);
     if (!chat) return jsonError(404, 'Chat not found');
 
-    const messages = await getMessages(db, id);
+    const messages = await getMessages(id);
     const jsonl = messages
         .map((m) =>
             JSON.stringify({

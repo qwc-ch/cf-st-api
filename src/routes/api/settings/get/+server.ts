@@ -1,11 +1,10 @@
 import { jsonError, jsonOk } from '../../../../lib/auth';
-import { getDb, getSettings } from '../../../../lib/db';
+import { getSettings } from '../../../../lib/db';
 
 export const GET = async (event) => {
     if (!event.locals.user) return jsonError(401, 'Unauthorized');
 
-    const db = getDb(event.platform!);
-    const settings = await getSettings(db, event.locals.user.handle);
+    const settings = await getSettings(event.locals.user.handle);
 
     if (settings) {
         try {
@@ -20,8 +19,7 @@ export const GET = async (event) => {
 
 export const POST = async (event) => {
     if (!event.locals.user) return jsonError(401, 'Unauthorized');
-    const db = getDb(event.platform!);
-    const settings = await getSettings(db, event.locals.user.handle);
+    const settings = await getSettings(event.locals.user.handle);
 
     if (settings) {
         try {

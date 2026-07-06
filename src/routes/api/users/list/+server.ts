@@ -1,8 +1,7 @@
 import { jsonOk } from '../../../../lib/auth';
-import { getDb, listUsers } from '../../../../lib/db';
+import { listUsers } from '../../../../lib/db';
 
 export const GET = async (event) => {
-    const db = getDb(event.platform!);
-    const users = await listUsers(db);
+    const users = await listUsers();
     return jsonOk(users);
 };

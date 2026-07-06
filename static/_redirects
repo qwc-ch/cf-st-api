@@ -1,0 +1,4 @@
+# SillyTavern Cloudflare Pages redirects
+# API and CSRF requests are proxied to the backend Worker
+/api/* https://sillytavern-api.workers.dev/api/:splat 200
+/csrf-token https://sillytavern-api.workers.dev/csrf-token 200

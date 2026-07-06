@@ -1,5 +1,5 @@
 import { jsonError, jsonOk } from '../../../../lib/auth';
-import { getBucket, isImageType, uploadImage } from '../../../../lib/r2';
+import { isImageType, uploadImage } from '../../../../lib/r2';
 
 export const POST = async (event) => {
     if (!event.locals.user) return jsonError(401, 'Unauthorized');
@@ -18,11 +18,10 @@ export const POST = async (event) => {
     const category = (formData.get('category') as string) || 'uploads';
     const filename = `${Date.now()}-${(file as File).name || 'image'}`;
 
-    const bucket = getBucket(event.platform!);
-    const key = await uploadImage(bucket, event.locals.user.handle, category, filename, arrayBuf, contentType);
+    const key = await uploadImage(event.locals.user.handle, category, filename, arrayBuf, contentType);
 
-    const publicUrl = event.platform!.env.PUBLIC_R2_URL
-        ? `${event.platform!.env.PUBLIC_R2_URL}/${key}`
+    const publicUrl = process.env.PUBLIC_STORAGE_URL
+        ? `${process.env.PUBLIC_STORAGE_URL}/${key}`
         : `/api/files/raw/${key}`;
 
     return jsonOk({ path: publicUrl, key });

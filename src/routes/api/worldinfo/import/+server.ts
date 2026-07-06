@@ -1,5 +1,5 @@
 import { jsonError, jsonOk } from '../../../../lib/auth';
-import { getDb, saveWorldInfo } from '../../../../lib/db';
+import { saveWorldInfo } from '../../../../lib/db';
 
 export const POST = async (event) => {
     if (!event.locals.user) return jsonError(401, 'Unauthorized');
@@ -7,8 +7,7 @@ export const POST = async (event) => {
     const { name, entries } = body;
     if (!name || !entries) return jsonError(400, 'name and entries are required');
 
-    const db = getDb(event.platform!);
-    const wi = await saveWorldInfo(db, {
+    const wi = await saveWorldInfo({
         user_handle: event.locals.user.handle,
         name,
         entries: JSON.stringify(entries),

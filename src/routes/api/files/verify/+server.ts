@@ -1,5 +1,5 @@
 import { jsonError, jsonOk } from '../../../../lib/auth';
-import { getBucket, getFile } from '../../../../lib/r2';
+import { getFile } from '../../../../lib/r2';
 
 export const POST = async (event) => {
     if (!event.locals.user) return jsonError(401, 'Unauthorized');
@@ -7,7 +7,6 @@ export const POST = async (event) => {
     const { key } = body;
     if (!key) return jsonError(400, 'key is required');
 
-    const bucket = getBucket(event.platform!);
-    const file = await getFile(bucket, key);
+    const file = await getFile(key);
     return jsonOk({ exists: !!file, key });
 };

@@ -1,5 +1,5 @@
 import { jsonError, jsonOk } from '../../../../../lib/auth';
-import { deleteFile, getBucket } from '../../../../../lib/r2';
+import { deleteFile } from '../../../../../lib/r2';
 
 export const POST = async (event) => {
     if (!event.locals.user) return jsonError(401, 'Unauthorized');
@@ -8,7 +8,6 @@ export const POST = async (event) => {
     if (!name) return jsonError(400, 'name is required');
 
     const key = `${event.locals.user.handle}/sd-workflows/${name}`;
-    const bucket = getBucket(event.platform!);
-    await deleteFile(bucket, key);
+    await deleteFile(key);
     return jsonOk({ ok: true });
 };

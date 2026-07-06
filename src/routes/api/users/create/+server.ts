@@ -1,5 +1,5 @@
 import { generateSalt, hashPassword, jsonError, jsonOk } from '../../../../lib/auth';
-import { createUser, getDb, getUserByHandle, listUsers } from '../../../../lib/db';
+import { createUser, getUserByHandle, listUsers } from '../../../../lib/db';
 
 export const POST = async (event) => {
     try {
@@ -7,8 +7,7 @@ export const POST = async (event) => {
         const { handle, name, password } = body;
         if (!handle) return jsonError(400, 'Handle is required');
 
-        const db = getDb(event.platform!);
-        const existing = await getUserByHandle(db, handle.toLowerCase().trim());
+        const existing = await getUserByHandle(handle.toLowerCase().trim());
         if (existing) return jsonError(409, 'User already exists');
 
         let password_hash: string | null = null;
@@ -19,10 +18,10 @@ export const POST = async (event) => {
         }
 
         // First user is automatically admin
-        const allUsers = await listUsers(db);
+        const allUsers = await listUsers();
         const isFirstUser = allUsers.length === 0;
 
-        const user = await createUser(db, {
+        const user = await createUser({
             handle: handle.toLowerCase().trim(),
             name: name || handle,
             password_hash,

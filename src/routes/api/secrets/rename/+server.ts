@@ -1,6 +1,5 @@
 import { jsonError, jsonOk } from '../../../../lib/auth';
-import { getDb } from '../../../../lib/db';
-
+import { sql } from '../../../../lib/db';
 export const POST = async (event) => {
     if (!event.locals.user) return jsonError(401, 'Unauthorized');
     const body = await event.request.json().catch(() => ({}));
@@ -8,12 +7,12 @@ export const POST = async (event) => {
 
     if (!key || !id || !label) return jsonError(400, 'key, id, and label are required');
 
-    const db = getDb(event.platform!);
-
-    await db
-        .prepare('UPDATE secrets SET label = ? WHERE id = ? AND user_handle = ? AND key_name = ?')
-        .bind(label, id, event.locals.user.handle, key)
-        .run();
+    await sql('UPDATE secrets SET label = $1 WHERE id = $2 AND user_handle = $3 AND key_name = $4', [
+        label,
+        id,
+        event.locals.user.handle,
+        key,
+    ]);
 
     return jsonOk({ ok: true });
 };

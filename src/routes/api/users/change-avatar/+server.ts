@@ -1,6 +1,6 @@
 import { jsonError, jsonOk } from '../../../../lib/auth';
-import { getDb } from '../../../../lib/db';
-import { getBucket, isImageType, uploadImage } from '../../../../lib/r2';
+import { sql } from '../../../../lib/db';
+import { isImageType, uploadImage } from '../../../../lib/r2';
 
 export const POST = async (event) => {
     if (!event.locals.user) return jsonError(401, 'Unauthorized');
@@ -15,25 +15,13 @@ export const POST = async (event) => {
     const contentType = file.type || 'image/png';
     if (!isImageType(contentType)) return jsonError(400, 'Unsupported image type');
 
-    const bucket = getBucket(event.platform!);
-    const key = await uploadImage(
-        bucket,
-        event.locals.user.handle,
-        'avatars',
-        `avatar-${Date.now()}`,
-        arrayBuf,
-        contentType,
-    );
+    const key = await uploadImage(event.locals.user.handle, 'avatars', `avatar-${Date.now()}`, arrayBuf, contentType);
 
-    const publicUrl = event.platform!.env.PUBLIC_R2_URL
-        ? `${event.platform!.env.PUBLIC_R2_URL}/${key}`
+    const publicUrl = process.env.PUBLIC_STORAGE_URL
+        ? `${process.env.PUBLIC_STORAGE_URL}/${key}`
         : `/api/files/raw/${key}`;
 
-    const db = getDb(event.platform!);
-    await db
-        .prepare('UPDATE users SET avatar_url = ? WHERE handle = ?')
-        .bind(publicUrl, event.locals.user.handle)
-        .run();
+    await sql('UPDATE users SET avatar_url = $1 WHERE handle = $2', [publicUrl, event.locals.user.handle]);
 
     return jsonOk({ path: publicUrl });
 };

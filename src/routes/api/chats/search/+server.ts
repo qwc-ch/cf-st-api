@@ -1,12 +1,8 @@
 import { jsonError, jsonOk } from '../../../../lib/auth';
-import { getDb } from '../../../../lib/db';
-
 export const POST = async (event) => {
     if (!event.locals.user) return jsonError(401, 'Unauthorized');
     const { text, character_id } = await event.request.json().catch(() => ({}));
     if (!text) return jsonError(400, 'text is required');
-
-    const db = getDb(event.platform!);
 
     let query = `
         SELECT m.id, m.chat_id, m.role, m.name, m.content, m.message_id, c.name as chat_name

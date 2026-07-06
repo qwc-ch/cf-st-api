@@ -1,5 +1,5 @@
 import { jsonError, jsonOk } from '../../../../lib/auth';
-import { getBucket, uploadFile } from '../../../../lib/r2';
+import { uploadFile } from '../../../../lib/r2';
 
 export const POST = async (event) => {
     if (!event.locals.user) return jsonError(401, 'Unauthorized');
@@ -9,7 +9,6 @@ export const POST = async (event) => {
 
     const key = `${event.locals.user.handle}/vectors/${index}/${id}.json`;
     const data = JSON.stringify({ id, vector, metadata, created: Date.now() });
-    const bucket = getBucket(event.platform!);
-    await uploadFile(bucket, key, new TextEncoder().encode(data), 'application/json');
+    await uploadFile(key, new TextEncoder().encode(data), 'application/json');
     return jsonOk({ ok: true, key });
 };

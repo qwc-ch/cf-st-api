@@ -1,13 +1,12 @@
 import { jsonError, jsonOk } from '../../../../lib/auth';
-import { getDb, getUserByHandle } from '../../../../lib/db';
+import { getUserByHandle } from '../../../../lib/db';
 
 export const POST = async (event) => {
     if (!event.locals.user) return jsonError(401, 'Unauthorized');
     const { handle } = await event.request.json().catch(() => ({}));
     if (!handle) return jsonError(400, 'handle is required');
 
-    const db = getDb(event.platform!);
-    const user = await getUserByHandle(db, handle);
+    const user = await getUserByHandle(handle);
     if (!user) return jsonError(404, 'User not found');
 
     return jsonOk({

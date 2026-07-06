@@ -1,5 +1,5 @@
 import { jsonError, jsonOk } from '../../../../lib/auth';
-import { getDb } from '../../../../lib/db';
+import { sql } from '../../../../lib/db';
 
 export const POST = async (event) => {
     if (!event.locals.user) return jsonError(401, 'Unauthorized');
@@ -8,15 +8,10 @@ export const POST = async (event) => {
 
     if (!key) return jsonError(400, 'key is required');
 
-    const db = getDb(event.platform!);
-
-    const secrets = await db
-        .prepare(
-            'SELECT id, key_name, value, label, active, created FROM secrets WHERE user_handle = ? AND key_name = ? ORDER BY created DESC',
-        )
-        .bind(event.locals.user.handle, key)
-        .all<{ id: string; key_name: string; value: string; label: string; active: number; created: number }>()
-        .then((r) => r.results);
+    const secrets = (await sql(
+        'SELECT id, key_name, value, label, active, created FROM secrets WHERE user_handle = $1 AND key_name = $2 ORDER BY created DESC',
+        [event.locals.user.handle, key],
+    )) as { id: string; key_name: string; value: string; label: string; active: number; created: number }[];
 
     const masked = secrets.map((s) => ({
         ...s,

@@ -1,5 +1,5 @@
 import { jsonError, jsonOk } from '../../../../lib/auth';
-import { getDb, getWorldInfoById, saveWorldInfo } from '../../../../lib/db';
+import { getWorldInfoById, saveWorldInfo } from '../../../../lib/db';
 
 export const POST = async (event) => {
     if (!event.locals.user) return jsonError(401, 'Unauthorized');
@@ -7,8 +7,7 @@ export const POST = async (event) => {
     const { id, name, entries } = body;
 
     if (id) {
-        const db = getDb(event.platform!);
-        const existing = await getWorldInfoById(db, id, event.locals.user.handle);
+        const existing = await getWorldInfoById(id, event.locals.user.handle);
         if (!existing) return jsonError(404, 'World info not found');
         const now = Date.now();
         await db
@@ -22,8 +21,7 @@ export const POST = async (event) => {
 
     if (!name) return jsonError(400, 'name is required');
 
-    const db = getDb(event.platform!);
-    const wi = await saveWorldInfo(db, {
+    const wi = await saveWorldInfo({
         user_handle: event.locals.user.handle,
         name,
         entries: JSON.stringify(entries || []),

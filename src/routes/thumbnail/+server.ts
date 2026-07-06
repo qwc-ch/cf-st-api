@@ -4,7 +4,7 @@ export const GET = async (event) => {
     const path = event.url.searchParams.get('path');
     if (!path) return jsonError(400, 'Missing path');
 
-    const publicUrl = event.platform?.env?.PUBLIC_R2_URL;
+    const publicUrl = process.env.PUBLIC_STORAGE_URL;
     if (publicUrl) {
         return new Response(null, {
             status: 302,

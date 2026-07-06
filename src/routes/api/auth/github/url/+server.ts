@@ -1,10 +1,10 @@
 import { jsonError, jsonOk } from '../../../../../lib/auth';
 
 export const GET = async (event) => {
-    const clientId = event.platform?.env?.GITHUB_CLIENT_ID;
+    const clientId = process.env.GITHUB_CLIENT_ID;
     if (!clientId) return jsonError(500, 'GitHub OAuth not configured');
 
-    const frontendUrl = event.platform?.env?.FRONTEND_URL;
+    const frontendUrl = process.env.FRONTEND_URL;
     if (!frontendUrl) return jsonError(500, 'FRONTEND_URL not configured');
 
     const redirectUri = `${frontendUrl}/api/auth/github/callback`;

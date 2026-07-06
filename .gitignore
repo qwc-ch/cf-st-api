@@ -4,3 +4,8 @@ node_modules/
 build/
 *.local
 .DS_Store
+data/storage/
+.vercel/
+.env
+.env.*
+!.env.example

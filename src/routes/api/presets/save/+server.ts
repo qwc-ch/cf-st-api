@@ -1,6 +1,4 @@
 import { jsonError, jsonOk } from '../../../../lib/auth';
-import { getDb } from '../../../../lib/db';
-
 export const POST = async (event) => {
     if (!event.locals.user) return jsonError(401, 'Unauthorized');
     const body = await event.request.json().catch(() => ({}));
@@ -8,7 +6,6 @@ export const POST = async (event) => {
 
     if (!name || !preset) return jsonError(400, 'name and preset are required');
 
-    const db = getDb(event.platform!);
     const now = Date.now();
     const value = typeof preset === 'string' ? preset : JSON.stringify(preset);
 

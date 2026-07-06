@@ -1,11 +1,10 @@
 import { jsonError, jsonOk } from '../../../../lib/auth';
-import { getDb, getSettings } from '../../../../lib/db';
+import { getSettings } from '../../../../lib/db';
 
 export const GET = async (event) => {
     if (!event.locals.user) return jsonError(401, 'Unauthorized');
     try {
-        const db = getDb(event.platform!);
-        const raw = await getSettings(db, event.locals.user.handle);
+        const raw = await getSettings(event.locals.user.handle);
         let themes: Record<string, any> = {};
         if (raw) {
             try {

@@ -1,16 +1,16 @@
 import { generateSalt, hashPassword, jsonError, setSessionCookie } from '../../../../../lib/auth';
-import { createUser, getDb, getUserByHandle } from '../../../../../lib/db';
+import { createUser, getUserByHandle } from '../../../../../lib/db';
 
 export const GET = async (event) => {
     const code = event.url.searchParams.get('code');
     if (!code) return jsonError(400, 'Missing code parameter');
 
-    const clientId = event.platform?.env?.GITHUB_CLIENT_ID;
-    const clientSecret = event.platform?.env?.GITHUB_CLIENT_SECRET;
-    const allowedUsers = event.platform?.env?.ALLOWED_GITHUB_USERS || '';
+    const clientId = process.env.GITHUB_CLIENT_ID;
+    const clientSecret = process.env.GITHUB_CLIENT_SECRET;
+    const allowedUsers = process.env.ALLOWED_GITHUB_USERS || '';
     if (!clientId || !clientSecret) return jsonError(500, 'GitHub OAuth not configured');
 
-    const frontendUrl = event.platform?.env?.FRONTEND_URL;
+    const frontendUrl = process.env.FRONTEND_URL;
     if (!frontendUrl) return jsonError(500, 'FRONTEND_URL not configured');
 
     const tokenRes = await fetch('https://github.com/login/oauth/access_token', {
@@ -42,16 +42,15 @@ export const GET = async (event) => {
         }
     }
 
-    const db = getDb(event.platform!);
     const handle = ghLogin.toLowerCase();
-    const existing = await getUserByHandle(db, handle);
+    const existing = await getUserByHandle(handle);
 
     if (existing) {
         setSessionCookie(event, handle);
     } else {
         const salt = generateSalt();
         const passwordHash = hashPassword(ghLogin, salt);
-        await createUser(db, {
+        await createUser({
             handle,
             name: ghName,
             password_hash: passwordHash,

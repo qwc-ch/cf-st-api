@@ -6,14 +6,6 @@ export const POST = async (event) => {
     const { text } = body;
     if (!text) return jsonError(400, 'text is required');
 
-    try {
-        const ai = event.platform?.env?.AI;
-        if (ai) {
-            const result = await ai.run('@cf/huggingface/distilbert-sst-2-int8', { inputs: text });
-            return jsonOk(result);
-        }
-    } catch {}
-
     return jsonOk([
         { label: 'POSITIVE', score: 0.5 },
         { label: 'NEGATIVE', score: 0.5 },

@@ -1,6 +1,5 @@
 import { jsonError, jsonOk } from '../../../../lib/auth';
-import { getDb } from '../../../../lib/db';
-
+import { sql } from '../../../../lib/db';
 export const POST = async (event) => {
     if (!event.locals.user) return jsonError(401, 'Unauthorized');
     const body = await event.request.json().catch(() => ({}));
@@ -8,11 +7,7 @@ export const POST = async (event) => {
 
     if (!name) return jsonError(400, 'name is required');
 
-    const db = getDb(event.platform!);
-    await db
-        .prepare('DELETE FROM presets WHERE user_handle = ? AND name = ?')
-        .bind(event.locals.user.handle, name)
-        .run();
+    await sql('DELETE FROM presets WHERE user_handle = $1 AND name = $2', [event.locals.user.handle, name]);
 
     return jsonOk({ ok: true });
 };

@@ -1,5 +1,5 @@
 import { jsonError, jsonOk } from '../../../../lib/auth';
-import { getDb, saveGroup } from '../../../../lib/db';
+import { saveGroup } from '../../../../lib/db';
 
 export const POST = async (event) => {
     if (!event.locals.user) return jsonError(401, 'Unauthorized');
@@ -7,8 +7,7 @@ export const POST = async (event) => {
     const { name, members, data } = body;
     if (!name) return jsonError(400, 'name is required');
 
-    const db = getDb(event.platform!);
-    const group = await saveGroup(db, {
+    const group = await saveGroup({
         user_handle: event.locals.user.handle,
         name,
         members: JSON.stringify(members || []),

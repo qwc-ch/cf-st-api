@@ -1,5 +1,5 @@
 import { jsonError, jsonOk } from '../../../../lib/auth';
-import { deleteFile, getBucket } from '../../../../lib/r2';
+import { deleteFile } from '../../../../lib/r2';
 
 export const POST = async (event) => {
     if (!event.locals.user) return jsonError(401, 'Unauthorized');
@@ -9,7 +9,6 @@ export const POST = async (event) => {
 
     if (!key.startsWith(event.locals.user.handle + '/')) return jsonError(403, 'Access denied');
 
-    const bucket = getBucket(event.platform!);
-    await deleteFile(bucket, key);
+    await deleteFile(key);
     return jsonOk({ ok: true });
 };
