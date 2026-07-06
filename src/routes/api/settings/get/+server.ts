@@ -30,7 +30,16 @@ export const GET = async (event) => {
             result: 'ok',
             settings: JSON.stringify(parsed),
             enable_accounts: false,
+            enable_extensions: false,
+            enable_extensions_auto_update: false,
             request_compression: { enabled: false },
+            koboldai_setting_names: [],
+            koboldai_settings: [],
+            openai_setting_names: [],
+            openai_settings: [],
+            novelai_setting_names: [],
+            novelai_settings: [],
+            textgenerationwebui_preset_names: [],
         });
     }
 
@@ -47,7 +56,16 @@ export const POST = async (event) => {
             result: 'ok',
             settings: JSON.stringify(parsed),
             enable_accounts: false,
+            enable_extensions: false,
+            enable_extensions_auto_update: false,
             request_compression: { enabled: false },
+            koboldai_setting_names: [],
+            koboldai_settings: [],
+            openai_setting_names: [],
+            openai_settings: [],
+            novelai_setting_names: [],
+            novelai_settings: [],
+            textgenerationwebui_preset_names: [],
         });
     }
 

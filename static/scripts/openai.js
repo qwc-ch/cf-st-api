@@ -4217,8 +4217,8 @@ function migrateChatCompletionSettings(settings) {
  * @param {ChatCompletionSettings} settings Saved settings from backend
  */
 function loadOpenAISettings(data, settings) {
-    openai_setting_names = data.openai_setting_names;
-    openai_settings = data.openai_settings;
+    openai_setting_names = data.openai_setting_names ?? [];
+    openai_settings = data.openai_settings ?? [];
     openai_settings.forEach(function (item, i) {
         openai_settings[i] = JSON.parse(item);
     });

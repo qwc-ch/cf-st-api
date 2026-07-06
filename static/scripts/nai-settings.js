@@ -213,8 +213,8 @@ export function loadNovelPreset(preset) {
 }
 
 export function loadNovelSettings(data, settings) {
-    novelai_setting_names = data.novelai_setting_names;
-    novelai_settings = data.novelai_settings;
+    novelai_setting_names = data.novelai_setting_names ?? [];
+    novelai_settings = data.novelai_settings ?? [];
     novelai_settings.forEach(function (item, i, arr) {
         novelai_settings[i] = JSON.parse(item);
     });
