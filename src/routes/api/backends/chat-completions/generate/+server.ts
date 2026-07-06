@@ -34,7 +34,7 @@ export const POST = async (event) => {
     if (!event.locals.user) return jsonError(401, 'Unauthorized');
 
     const body = await event.request.json().catch(() => ({}));
-    const api_url = body.api_url || body.custom_url;
+    const raw_url = body.api_url || body.custom_url;
     const {
         api_url: _,
         custom_url,
@@ -46,7 +46,12 @@ export const POST = async (event) => {
         ...params
     } = body;
 
-    if (!api_url) return jsonError(400, 'api_url is required');
+    if (!raw_url) return jsonError(400, 'api_url is required');
+
+    // Append /v1/chat/completions for CUSTOM source if not already present
+    const api_url = raw_url.includes('chat/completions')
+        ? raw_url
+        : `${raw_url.replace(/\/+$/, '')}/v1/chat/completions`;
 
     // Resolve API key: prefer body.api_key, fall back to DB secret
     let resolvedKey = api_key;
