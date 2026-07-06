@@ -6,8 +6,8 @@ const handle = async (event) => {
 
     const chats = await sql(
         `
-        SELECT c.id, c.name, c.character_id, c.updated,
-               ch.name as character_name, ch.avatar_url
+        SELECT c.id, c.name as file_name, c.character_id, c.updated,
+               ch.name as character_name, ch.avatar_url as avatar
         FROM chats c
         LEFT JOIN characters ch ON ch.id = c.character_id
         WHERE c.user_handle = $1
@@ -16,7 +16,13 @@ const handle = async (event) => {
         [event.locals.user.handle],
     );
 
-    return jsonOk(chats);
+    const result = (chats as any[]).map((c) => ({
+        ...c,
+        file_name: c.file_name ? `${c.file_name}.jsonl` : '',
+        last_mes: c.updated,
+    }));
+
+    return jsonOk(result);
 };
 
 export const GET = handle;

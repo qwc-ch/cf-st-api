@@ -1,10 +1,12 @@
 import { jsonError, jsonOk } from '../../../../lib/auth';
-import { getWorldInfoById, saveWorldInfo, sql } from '../../../../lib/db';
+import { getWorldInfoById, getWorldInfoByName, saveWorldInfo, sql } from '../../../../lib/db';
 
 export const POST = async (event) => {
     if (!event.locals.user) return jsonError(401, 'Unauthorized');
     const body = await event.request.json().catch(() => ({}));
-    const { id, name, entries } = body;
+    const { id, name, entries, data } = body;
+
+    const entriesData = entries || data?.entries || [];
 
     if (id) {
         const existing = await getWorldInfoById(id, event.locals.user.handle);
@@ -12,17 +14,19 @@ export const POST = async (event) => {
         const now = Date.now();
         await sql(
             'UPDATE world_infos SET entries = $1, name = COALESCE($2, name), updated = $3 WHERE id = $4 AND user_handle = $5',
-            [JSON.stringify(entries || []), name || null, now, id, event.locals.user.handle],
+            [JSON.stringify(entriesData), name || null, now, id, event.locals.user.handle],
         );
         return jsonOk({ ok: true });
     }
 
-    if (!name) return jsonError(400, 'name is required');
+    const resolvedName = name || data?.name;
+    if (!resolvedName) return jsonError(400, 'name is required');
 
     const wi = await saveWorldInfo({
         user_handle: event.locals.user.handle,
-        name,
-        entries: JSON.stringify(entries || []),
+        name: resolvedName,
+        entries: JSON.stringify(entriesData),
     });
+
     return jsonOk(wi);
 };

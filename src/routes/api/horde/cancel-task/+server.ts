@@ -5,11 +5,11 @@ const HORDE_API = 'https://horde.koboldai.net/api/v2';
 export const POST = async (event) => {
     if (!event.locals.user) return jsonError(401, 'Unauthorized');
     const body = await event.request.json().catch(() => ({}));
-    const { id } = body;
-    if (!id) return jsonError(400, 'id is required');
+    const { taskId } = body;
+    if (!taskId) return jsonError(400, 'taskId is required');
 
     try {
-        const res = await fetch(`${HORDE_API}/generate/text/status/${id}`, {
+        const res = await fetch(`${HORDE_API}/generate/text/status/${taskId}`, {
             method: 'DELETE',
         });
         if (!res.ok) return jsonError(res.status, await res.text());

@@ -1,40 +1,55 @@
 import { jsonError, jsonOk } from '../../../../lib/auth';
-import { createChat, deleteMessages, getChatById, saveMessage } from '../../../../lib/db';
+import {
+    createChat,
+    deleteMessages,
+    getCharacterByAvatar,
+    getChatByName,
+    getMessages,
+    saveMessage,
+} from '../../../../lib/db';
 
 export const POST = async (event) => {
     if (!event.locals.user) return jsonError(401, 'Unauthorized');
     const body = await event.request.json().catch(() => ({}));
-    const { id, character_id, name, messages } = body;
+    const { ch_name, file_name, chat: chatArray, avatar_url, force } = body;
 
-    let chatId = id;
-    if (chatId) {
-        const existing = await getChatById(chatId, event.locals.user.handle);
-        if (!existing) return jsonError(404, 'Chat not found');
-        await deleteMessages(chatId);
-    } else if (character_id) {
-        const chat = await createChat({
+    if (!file_name || !avatar_url) return jsonError(400, 'file_name and avatar_url are required');
+
+    const char = await getCharacterByAvatar(event.locals.user.handle, avatar_url);
+    if (!char) return jsonError(404, 'Character not found');
+
+    const chatName = file_name.replace(/\.jsonl$/i, '');
+    let chat = await getChatByName(event.locals.user.handle, char.id, chatName);
+
+    if (!chat) {
+        chat = await createChat({
             user_handle: event.locals.user.handle,
-            character_id,
-            name: name || 'New Chat',
+            character_id: char.id,
+            name: chatName,
         });
-        chatId = chat.id;
-    } else {
-        return jsonError(400, 'id or character_id is required');
+    } else if (!force) {
+        const existingMsgs = await getMessages(chat.id);
+        if (existingMsgs.length > 0) {
+            return jsonOk({ error: 'integrity' });
+        }
     }
 
-    if (Array.isArray(messages)) {
+    await deleteMessages(chat.id);
+
+    if (Array.isArray(chatArray)) {
+        const messages = chatArray.filter((_: any, i: number) => i > 0 || !chatArray[0]?.chat_metadata);
         for (let i = 0; i < messages.length; i++) {
             const msg = messages[i];
             await saveMessage({
-                chat_id: chatId,
+                chat_id: chat.id,
                 role: msg.role || 'user',
                 name: msg.name || '',
                 content: msg.content || '',
-                extra: msg.extra ? JSON.stringify(msg.extra) : null,
+                extra: msg.extra ? (typeof msg.extra === 'string' ? msg.extra : JSON.stringify(msg.extra)) : null,
                 message_id: msg.message_id ?? i,
             });
         }
     }
 
-    return jsonOk({ id: chatId });
+    return jsonOk({ ok: true });
 };

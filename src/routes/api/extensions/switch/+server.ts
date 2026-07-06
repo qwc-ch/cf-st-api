@@ -1,5 +1,3 @@
-import { jsonError } from '../../../../lib/auth';
+import { handleSwitch } from '../../../../lib/extensions';
 
-export const POST = async (_event) => {
-    return jsonError(501, 'not available in cloud');
-};
+export const POST = handleSwitch;

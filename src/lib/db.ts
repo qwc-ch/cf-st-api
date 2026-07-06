@@ -47,6 +47,48 @@ export async function getUserById(id: number): Promise<User | null> {
     return (rows as User[])[0] ?? null;
 }
 
+export async function getCharacterByAvatar(
+    userHandle: string,
+    avatarUrl: string,
+): Promise<(Character & { avatar: string; chat: string }) | null> {
+    const rows = await sql('SELECT * FROM characters WHERE user_handle = $1 AND avatar_url = $2', [
+        userHandle,
+        avatarUrl,
+    ]);
+    const char = (rows as Character[])[0];
+    if (char) return enrichCharacter(char);
+    const rowsLike = await sql('SELECT * FROM characters WHERE user_handle = $1 AND avatar_url LIKE $2', [
+        userHandle,
+        `%${avatarUrl}`,
+    ]);
+    const charLike = (rowsLike as Character[])[0];
+    return charLike ? enrichCharacter(charLike) : null;
+}
+
+export async function getChatByName(userHandle: string, characterId: number, name: string): Promise<Chat | null> {
+    const rows = await sql('SELECT * FROM chats WHERE user_handle = $1 AND character_id = $2 AND name = $3', [
+        userHandle,
+        characterId,
+        name,
+    ]);
+    return (rows as Chat[])[0] ?? null;
+}
+
+export async function getWorldInfoByName(userHandle: string, name: string): Promise<WorldInfo | null> {
+    const rows = await sql('SELECT * FROM world_infos WHERE user_handle = $1 AND name = $2', [userHandle, name]);
+    return (rows as WorldInfo[])[0] ?? null;
+}
+
+export async function updateChatName(id: number, userHandle: string, name: string): Promise<void> {
+    const now = Date.now();
+    await sql('UPDATE chats SET name = $1, updated = $2 WHERE id = $3 AND user_handle = $4', [
+        name,
+        now,
+        id,
+        userHandle,
+    ]);
+}
+
 export async function listUsers(): Promise<User[]> {
     return sql(
         'SELECT id, handle, name, admin, enabled, created, avatar_url FROM users ORDER BY created ASC',
@@ -131,15 +173,27 @@ export interface Character {
     updated: number;
 }
 
-export async function getAllCharacters(userHandle: string): Promise<Character[]> {
-    return sql('SELECT * FROM characters WHERE user_handle = $1 ORDER BY updated DESC', [userHandle]) as Promise<
-        Character[]
-    >;
+function enrichCharacter(char: Character): Character & { avatar: string; chat: string } {
+    let chat = '';
+    try {
+        const data = JSON.parse(char.data || '{}');
+        chat = data.chat || '';
+    } catch {}
+    return { ...char, avatar: char.avatar_url || '', chat };
 }
 
-export async function getCharacterById(id: number, userHandle: string): Promise<Character | null> {
+export async function getAllCharacters(userHandle: string): Promise<(Character & { avatar: string; chat: string })[]> {
+    const rows = await sql('SELECT * FROM characters WHERE user_handle = $1 ORDER BY updated DESC', [userHandle]);
+    return (rows as Character[]).map(enrichCharacter);
+}
+
+export async function getCharacterById(
+    id: number,
+    userHandle: string,
+): Promise<(Character & { avatar: string; chat: string }) | null> {
     const rows = await sql('SELECT * FROM characters WHERE id = $1 AND user_handle = $2', [id, userHandle]);
-    return (rows as Character[])[0] ?? null;
+    const char = (rows as Character[])[0];
+    return char ? enrichCharacter(char) : null;
 }
 
 export async function createCharacter(c: Omit<Character, 'id' | 'created' | 'updated'>): Promise<Character> {

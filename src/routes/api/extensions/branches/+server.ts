@@ -1,6 +1,3 @@
-import { jsonError, jsonOk } from '../../../../lib/auth';
+import { handleBranches } from '../../../../lib/extensions';
 
-export const POST = async (event) => {
-    if (!event.locals.user) return jsonError(401, 'Unauthorized');
-    return jsonOk({ branches: [] });
-};
+export const POST = handleBranches;

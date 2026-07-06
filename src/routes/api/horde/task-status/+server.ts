@@ -16,3 +16,18 @@ export const GET = async (event) => {
         return jsonError(502, `Error: ${e.message}`);
     }
 };
+
+export const POST = async (event) => {
+    if (!event.locals.user) return jsonError(401, 'Unauthorized');
+    const { taskId } = await event.request.json().catch(() => ({}));
+    if (!taskId) return jsonError(400, 'taskId is required');
+
+    try {
+        const res = await fetch(`${HORDE_API}/generate/text/status/${taskId}`);
+        if (!res.ok) return jsonError(res.status, await res.text());
+        const data = await res.json();
+        return jsonOk(data);
+    } catch (e: any) {
+        return jsonError(502, `Error: ${e.message}`);
+    }
+};

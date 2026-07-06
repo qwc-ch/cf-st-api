@@ -1,5 +1,5 @@
-import { jsonError, jsonOk, setSessionCookie } from '$lib/auth';
-import { sql } from '$lib/db';
+import { jsonError, jsonOk, setSessionCookie } from '../../../lib/auth';
+import { sql } from '../../../lib/db';
 
 export const POST = async (event) => {
     const { username, password } = await event.request.json().catch(() => ({}));

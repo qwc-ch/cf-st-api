@@ -58,7 +58,8 @@ All routes under `src/routes/api/`. Each subdirectory is a SvelteKit server rout
 - `/api/speech`, `/api/translate` — TTS/STT and translation
 - `/api/vector` — text embeddings
 - `/api/themes`, `/api/avatars`, `/api/sprites`, `/api/moving-ui` — UI resources
-- `/api/extensions`, `/api/quick-replies` — extensions
+- `/api/extensions` — extension install/update/delete/move/switch/discover/version/branches/execute (git-based, stored in `./data/extensions/`)
+- `/api/quick-replies` — extensions
 - `/api/content` — URL content import
 - `/api/backups`, `/api/data-maid`, `/api/image-metadata` — data tools
 - `/api/tokenizers` — token counting (stub)
@@ -89,6 +90,7 @@ All routes under `src/routes/api/`. Each subdirectory is a SvelteKit server rout
 | `FRONTEND_URL` | Frontend URL for GitHub OAuth redirect |
 | `ADMIN_USERNAME` | Admin login username (simple auth) |
 | `ADMIN_PASSWORD` | Admin login password (simple auth) |
+| `EXTENSIONS_DIR` | Extensions storage directory (default: `./data/extensions`) |
 
 ## Notable quirks
 
