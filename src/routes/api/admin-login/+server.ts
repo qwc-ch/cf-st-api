@@ -1,4 +1,5 @@
 import { jsonError, jsonOk, setSessionCookie } from '$lib/auth';
+import { sql } from '$lib/db';
 
 export const POST = async (event) => {
     const { username, password } = await event.request.json().catch(() => ({}));
@@ -13,6 +14,14 @@ export const POST = async (event) => {
     if (username !== adminUser || password !== adminPass) {
         return jsonError(401, 'Invalid credentials');
     }
+
+    // Ensure admin user exists in database
+    await sql(
+        `INSERT INTO users (handle, name, admin, enabled, created)
+         VALUES ($1, $1, 1, 1, $2)
+         ON CONFLICT (handle) DO UPDATE SET admin = 1, enabled = 1`,
+        [adminUser, Date.now()],
+    );
 
     setSessionCookie(event, adminUser);
 
