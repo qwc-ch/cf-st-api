@@ -20,7 +20,8 @@ export function sql(strings: TemplateStringsArray | string, ...values: unknown[]
         return (c as any)(strings as TemplateStringsArray, ...values) as Promise<unknown[]>;
     }
     // Function call: sql('SELECT * FROM users WHERE id = $1', [id])
-    return (c as any)(strings, ...values) as Promise<unknown[]>;
+    // neon driver uses .query() for function-call syntax
+    return (c as any).query(strings, values?.[0]) as Promise<unknown[]>;
 }
 
 // ── Users ──
