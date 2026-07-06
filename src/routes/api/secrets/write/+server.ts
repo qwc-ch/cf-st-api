@@ -1,5 +1,12 @@
-import { jsonError, jsonOk } from '../../../../lib/auth';
-import { sql } from '../../../../lib/db';
+import { jsonError } from '../../../../lib/auth';
+import { ensureUserExists, sql } from '../../../../lib/db';
+
+function jsonOk(data: Record<string, unknown>): Response {
+    return new Response(JSON.stringify(data), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+    });
+}
 
 function uuid() {
     return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
@@ -15,17 +22,24 @@ export const POST = async (event) => {
 
     if (!key || !value) return jsonError(400, 'key and value are required');
 
-    const id = uuid();
+    try {
+        await ensureUserExists(event.locals.user.handle);
 
-    await sql('UPDATE secrets SET active = 0 WHERE user_handle = $1 AND key_name = $2', [
-        event.locals.user.handle,
-        key,
-    ]);
+        const id = uuid();
 
-    await sql(
-        'INSERT INTO secrets (id, user_handle, key_name, value, label, active, created) VALUES ($1, $2, $3, $4, $5, 1, $6)',
-        [id, event.locals.user.handle, key, value, label ?? '', Date.now()],
-    );
+        await sql('UPDATE secrets SET active = 0 WHERE user_handle = $1 AND key_name = $2', [
+            event.locals.user.handle,
+            key,
+        ]);
 
-    return jsonOk({ id });
+        await sql(
+            'INSERT INTO secrets (id, user_handle, key_name, value, label, active, created) VALUES ($1, $2, $3, $4, $5, 1, $6)',
+            [id, event.locals.user.handle, key, value, label ?? '', Date.now()],
+        );
+
+        return jsonOk({ id });
+    } catch (err) {
+        console.error('Failed to write secret:', err);
+        return jsonError(500, 'Failed to save secret');
+    }
 };

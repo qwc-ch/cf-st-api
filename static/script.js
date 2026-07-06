@@ -7876,8 +7876,6 @@ export async function getSettings(initLoaderHandle = null) {
         accountStorage.init(settings?.accountStorage);
         await setUserControls(data.enable_accounts);
         setRequestCompressionConfig(data.request_compression);
-    } else {
-        accountStorage.init({});
 
         // Allow subscribers to mutate settings
         await eventSource.emit(event_types.SETTINGS_LOADED_BEFORE, settings);
@@ -7984,6 +7982,8 @@ export async function getSettings(initLoaderHandle = null) {
             await doOnboarding(user_avatar);
             firstRun = false;
         }
+    } else {
+        accountStorage.init({});
     }
     await validateDisabledSamplers();
     settingsReady = true;
