@@ -53,6 +53,11 @@ export async function getAuthUser(event: RequestEvent): Promise<{ handle: string
     const parsed = parseSessionToken(token);
     if (!parsed) return null;
 
+    const adminUser = process.env.ADMIN_USERNAME;
+    if (parsed.handle === adminUser) {
+        return { handle: adminUser, admin: true };
+    }
+
     const user = await getUserByHandle(parsed.handle);
     if (!user || !user.enabled) return null;
 

@@ -1,5 +1,4 @@
-import { hashPassword, generateSalt, jsonError, jsonOk, setSessionCookie } from '$lib/auth';
-import { getUserByHandle, createUser } from '$lib/db';
+import { jsonError, jsonOk, setSessionCookie } from '$lib/auth';
 
 export const POST = async (event) => {
     const { username, password } = await event.request.json().catch(() => ({}));
@@ -15,21 +14,7 @@ export const POST = async (event) => {
         return jsonError(401, 'Invalid credentials');
     }
 
-    let user = await getUserByHandle(adminUser);
-
-    if (!user) {
-        const salt = generateSalt();
-        const password_hash = hashPassword(adminPass, salt);
-        user = await createUser({
-            handle: adminUser,
-            name: adminUser,
-            password_hash,
-            salt,
-            admin: 1,
-        });
-    }
-
-    setSessionCookie(event, user.handle);
+    setSessionCookie(event, adminUser);
 
     return jsonOk({ ok: true });
 };
