@@ -68,6 +68,20 @@ export async function createUser(user: {
     return (rows as User[])[0];
 }
 
+export async function ensureUserExists(handle: string): Promise<void> {
+    const existing = await getUserByHandle(handle);
+    if (existing) return;
+    // Auto-create user for admin auth fallback
+    const isAdmin = handle === process.env.ADMIN_USERNAME;
+    await createUser({
+        handle,
+        name: handle,
+        password_hash: null,
+        salt: null,
+        admin: isAdmin ? 1 : 0,
+    });
+}
+
 export async function updateUserPassword(handle: string, password_hash: string, salt: string): Promise<void> {
     await sql('UPDATE users SET password_hash = $1, salt = $2 WHERE handle = $3', [password_hash, salt, handle]);
 }
