@@ -1,4 +1,5 @@
-import { jsonError, jsonOk } from '$lib/auth';
+import { hashPassword, generateSalt, jsonError, jsonOk, setSessionCookie } from '$lib/auth';
+import { getUserByHandle, createUser } from '$lib/db';
 
 export const POST = async (event) => {
     const { username, password } = await event.request.json().catch(() => ({}));
@@ -14,13 +15,21 @@ export const POST = async (event) => {
         return jsonError(401, 'Invalid credentials');
     }
 
-    // Set a simple session cookie for admin access
-    event.cookies.set('admin_session', 'authenticated', {
-        path: '/',
-        httpOnly: true,
-        sameSite: 'lax',
-        maxAge: 86400,
-    });
+    let user = await getUserByHandle(adminUser);
+
+    if (!user) {
+        const salt = generateSalt();
+        const password_hash = hashPassword(adminPass, salt);
+        user = await createUser({
+            handle: adminUser,
+            name: adminUser,
+            password_hash,
+            salt,
+            admin: 1,
+        });
+    }
+
+    setSessionCookie(event, user.handle);
 
     return jsonOk({ ok: true });
 };
